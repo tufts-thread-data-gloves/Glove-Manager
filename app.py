@@ -129,8 +129,11 @@ class SetupPage(tk.Frame):
         # Label that describes directions for setting new calibration settings
 
     def updateContent(self):
-        # no-op for now
-        return
+        # this should hide overlays and show main options
+        self.description.pack_forget()
+        self.cal_button.pack_forget()
+        self.countdown_timer.pack_forget()
+        self.showCalMainPage()
 
     def showCalFileOverlay(self):
         self.hideCalMainPage()
@@ -144,7 +147,7 @@ class SetupPage(tk.Frame):
 
     def selectSavedFile(self):
         filepath = filedialog.askopenfilename()
-        self.cal_button.configure(text="Calibrate with Saved File", command=lambda : self.calibrateWithSavedFile(filepath))
+        self.cal_button.configure(text="Finish Calibrating with Selected File", command=lambda : self.calibrateWithSavedFile(filepath))
 
     def calibrateWithSavedFile(self, filepath):
         td.set_calibration_with_file(filepath)
