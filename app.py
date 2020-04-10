@@ -1,11 +1,17 @@
 from ThreadDeviceDriverWrapper import ThreadDeviceDriverWrapper
 import tkinter as tk
 from tkinter import filedialog
+from PIL import Image, ImageTk
 import pathlib
+import os
 import time
 
 LARGE_FONT = ("Verdana", 12)
 MEDIUM_FONT = ("Verdana", 10)
+GREY = "#444547"
+BUTTON_BLUE = "#399CFC"
+SUCCESS_GREEN = "#1DB817"
+FAILURE_RED = "#EB1331"
 
 global td
 td = ThreadDeviceDriverWrapper()
@@ -21,16 +27,40 @@ class ManagerWindow(tk.Tk):
 
         # setup up tkinter screen
         tk.Tk.__init__(self, *args, **kwargs)
-        self.minsize(width=500, height=300)
+        self.minsize(width=1000, height=700)
         self.title("Salmon Glove Manager")
-        menubar = tk.Menu(self)
 
-        menubar.add_command(label="Info", command=lambda: self.show_frame(InfoPage))
-        menubar.add_command(label="Setup", command=lambda: self.show_frame(SetupPage))
-        menubar.add_command(label="Demo", command=lambda: self.show_frame(DemoPage))
-        menubar.add_command(label="Help", command=lambda: self.show_frame(HelpPage))
+        menu_container = tk.Frame(self)
+        menu_container.pack(side="top", fill="both", expand=True)
+        menu_container.configure(bg="white")
 
-        self.config(menu=menubar)
+        # grids for the 'menubar' buttons
+        menu_container.grid_columnconfigure(0, weight=1)
+        menu_container.grid_columnconfigure(1, weight=1)
+
+        topLeftFrame = tk.Frame(menu_container, relief='solid', bg="white")
+        topLeftFrame.grid(row=0, column=0, padx=10, sticky="w")
+
+        self.info_button = tk.Button(topLeftFrame, text="Info", bg="white", bd=0, fg=GREY, font=("Verdana", 16),
+                                command=lambda: self.show_frame(InfoPage))
+        self.setup_button = tk.Button(topLeftFrame, text="Setup", bg="white", bd=0, fg=GREY, font=("Verdana", 16),
+                                 command=lambda: self.show_frame(SetupPage))
+        self.demo_button = tk.Button(topLeftFrame, text="Demo", bg="white", bd=0, fg=GREY, font=("Verdana", 16),
+                                command=lambda: self.show_frame(DemoPage))
+
+        self.info_button.grid(row=0, column=0, padx=10, pady=10)
+        self.setup_button.grid(row=0, column=1, padx=10, pady=10)
+        self.demo_button.grid(row=0, column=2, padx=10, pady=10)
+
+        topRightFrame = tk.Frame(menu_container, relief='solid', bg="white")
+        topRightFrame.grid(row=0, column=1, padx=10, sticky="e")
+
+        self.help_button = tk.Button(topRightFrame, text="Help", bg="white", bd=0, fg=GREY, font=("Verdana", 16),
+                                command=lambda: self.show_frame(HelpPage))
+        self.about_button = tk.Button(topRightFrame, text="About", bg="white", bd=0, fg=GREY, font=("Verdana", 16),
+                                 command=lambda: self.show_frame(AboutPage))
+        self.help_button.grid(row=0, column=0, padx=10, pady=10)
+        self.about_button.grid(row=0, column=1, padx=10, pady=10)
 
         container = tk.Frame(self)
 
@@ -41,42 +71,91 @@ class ManagerWindow(tk.Tk):
 
         self.frames = {}
 
-        for F in (InfoPage, SetupPage, DemoPage, HelpPage):
+        for F in (HomePage, InfoPage, SetupPage, DemoPage, HelpPage, AboutPage):
             frame = F(container, self)
 
             self.frames[F] = frame
 
             frame.grid(row=0, column=0, sticky="nsew")
 
-        self.show_frame(InfoPage)
+
+
+        self.show_frame(HomePage)
 
     def show_frame(self, cont):
+        # set all buttons back to normal first
+        self.info_button.configure(bg="white", fg=GREY)
+        self.setup_button.configure(bg="white", fg=GREY)
+        self.demo_button.configure(bg="white", fg=GREY)
+        self.help_button.configure(bg="white", fg=GREY)
+        self.about_button.configure(bg="white", fg=GREY)
+
         frame = self.frames[cont]
         frame.tkraise()
         frame.updateContent()
 
+        if cont == InfoPage:
+            self.info_button.configure(bg=GREY, fg="white")
+        elif cont == SetupPage:
+            self.setup_button.configure(bg=GREY, fg="white")
+        elif cont == DemoPage:
+            self.demo_button.configure(bg=GREY, fg="white")
+        elif cont == HelpPage:
+            self.help_button.configure(bg=GREY, fg="white")
+        elif cont == AboutPage:
+            self.about_button.configure(bg=GREY, fg="white")
+
+
     def is_glove_connected(self):
         return td.is_glove_connected()
+
+
+class HomePage(tk.Frame):
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+        self.welcome_label = tk.Label(self, text="Welcome!", font=("Verdana", 22), bg=GREY, anchor="center", fg="white")
+        self.welcome_label.pack(fill='x', ipady=10)
+
+        self.img = ImageTk.PhotoImage(Image.open("logo.png"))
+        self.glove_image = tk.Label(self, image=self.img)
+        self.glove_image.pack(pady=20)
+
+        self.start_button = tk.Button(self, text="Start!",
+                                   command=lambda: controller.show_frame(InfoPage), font=("Verdana", 14),
+                                   background=BUTTON_BLUE, anchor="center", fg="white", bd=0)
+        self.start_button.pack(pady=20, ipadx=40, ipady=5)
+
+    def updateContent(self):
+        # no-op for now
+        return
+
 
 
 class InfoPage(tk.Frame):
 
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
-        self.glove_connected_label = tk.Label(self, text="Salmon Glove not connected", font=LARGE_FONT)
-        self.glove_connected_label.pack(pady=10, padx=10)
-        self.glove_connected = False
-        refresh_button = tk.Button(self, text="Refresh Glove Connection",
-                                   command=lambda: self.is_glove_connected())
-        refresh_button.pack(pady=10, padx=10)
+
+        self.glove_connected_label = tk.Label(self, text="Glove Not Connected", font=("Verdana", 22), bg=FAILURE_RED, anchor="center", fg="white")
+        self.glove_connected_label.pack(fill='x', ipady=10)
+
+        self.img = ImageTk.PhotoImage(Image.open("logo.png"))
+        self.glove_image = tk.Label(self, image=self.img)
+        self.glove_image.pack(pady=20)
+
+        self.refresh_button = tk.Button(self, text="Refresh Connection",
+                                      command=lambda: self.is_glove_connected(), font=("Verdana", 14),
+                                      background=BUTTON_BLUE, anchor="center", fg="white", bd=0)
+        self.refresh_button.pack(pady=20, ipadx=20, ipady=5)
+
         self.is_glove_connected() # call this on init
 
     def is_glove_connected(self):
         self.glove_connected = td.is_glove_connected()
         if self.glove_connected:
-            self.glove_connected_label.configure(text="Salmon Glove connected!")
+            self.glove_connected_label.configure(text="Connection Successful!", bg=SUCCESS_GREEN)
         else:
-            self.glove_connected_label.configure(text="Salmon Glove not connected")
+            self.glove_connected_label.configure(text="Glove Not Connected", bg=FAILURE_RED)
 
     def updateContent(self):
         self.is_glove_connected()
@@ -130,10 +209,13 @@ class SetupPage(tk.Frame):
 
     def updateContent(self):
         # this should hide overlays and show main options
-        self.description.pack_forget()
-        self.cal_button.pack_forget()
-        self.countdown_timer.pack_forget()
-        self.showCalMainPage()
+        try:
+            self.description.pack_forget()
+            self.cal_button.pack_forget()
+            self.countdown_timer.pack_forget()
+            self.showCalMainPage()
+        except:
+            return
 
     def showCalFileOverlay(self):
         self.hideCalMainPage()
@@ -249,6 +331,18 @@ class HelpPage(tk.Frame):
     def updateContent(self):
         # no-op for now
         return
+
+class AboutPage(tk.Frame):
+
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+        label = tk.Label(self, text="About", font=LARGE_FONT)
+        label.pack(pady=10, padx=10)
+
+    def updateContent(self):
+        # no-op for now
+        return
+
 
 
 app = ManagerWindow()
