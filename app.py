@@ -182,6 +182,11 @@ class SetupPage(tk.Frame):
         self.countdown_timer = None
         self.cal_button = None
         self.label_notconn = None
+        # button to start calibration from saved file, or do it fresh
+        self.button_calfromfile = tk.Button(self, command=lambda: self.showCalFileOverlay(), font=("Verdana", 14),
+                                            background=BUTTON_BLUE, anchor="center", fg="white", bd=0)
+        self.button_calnew = tk.Button(self, command=lambda: self.showCalNewOverlay(), font=("Verdana", 14),
+                                       background=BUTTON_BLUE, anchor="center", fg="white", bd=0)
         self.remaining = 0
 
         # banner label and calibration image
@@ -200,11 +205,6 @@ class SetupPage(tk.Frame):
             else:
                 self.banner_label.configure(text="Glove Not Calibrated", bg=FAILURE_RED)
 
-            # button to start calibration from saved file, or do it fresh
-            self.button_calfromfile = tk.Button(self, command=lambda: self.showCalFileOverlay(), font=("Verdana", 14),
-                                      background=BUTTON_BLUE, anchor="center", fg="white", bd=0)
-            self.button_calnew = tk.Button(self, command=lambda: self.showCalNewOverlay(), font=("Verdana", 14),
-                                      background=BUTTON_BLUE, anchor="center", fg="white", bd=0)
             if self.is_calibrated:
                 self.button_calfromfile.configure(text="Recalibrate from saved file")
                 self.button_calnew.configure(text="Recalibrate with new data")
@@ -223,13 +223,25 @@ class SetupPage(tk.Frame):
         # this should hide overlays and show main options
         self.is_glove_connected = td.is_glove_connected()
         self.is_calibrated = td.is_calibrated()
-        try:
+
+        if self.description is not None:
             self.description.pack_forget()
+        if self.cal_button is not None:
             self.cal_button.pack_forget()
+        if self.cal_button is not None:
             self.countdown_timer.pack_forget()
-            self.showCalMainPage()
-        except:
-            return
+
+        self.showCalMainPage()
+
+        if self.is_glove_connected:
+            try:
+                self.label_notconn.pack_forget()
+            except:
+                pass
+        else:
+            self.banner_label.configure(text="Glove Not Connected", bg=FAILURE_RED,
+                                         anchor="center", fg="white")
+            self.label_notconn.pack(pady=20, padx=5)
 
     def showCalFileOverlay(self):
         self.hideCalMainPage()
@@ -243,8 +255,12 @@ class SetupPage(tk.Frame):
     def selectSavedFile(self):
         filepath = filedialog.askopenfilename()
 
-        td.set_calibration_with_file(filepath)
-        self.is_calibrated = td.is_calibrated()
+        try:
+            td.set_calibration_with_file(filepath)
+            self.is_calibrated = True
+        except:
+            # bad file/wrong format
+            self.is_calibrated = False
 
         # clean up
         self.cal_button.pack_forget()
@@ -257,7 +273,7 @@ class SetupPage(tk.Frame):
         # overlay for doing new calibration
         # we want description, countdown timer, start button, and saved file
         self.banner_label.configure(text="New Calibration", bg=BUTTON_BLUE)
-        self.description = tk.Label(self, font=("Verdana", 16),
+        self.description = tk.Label(self, font=("Verdana", 16), wraplength=600,
             text="You will have 10 seconds to open your hand as wide as possible and close it into a tight fist")
         #self.countdown_timer = tk.Label(self, font=MEDIUM_FONT, text="Time Left: 10 seconds")
         self.cal_button = tk.Button(self, text="Start", background=BUTTON_BLUE, anchor="center", fg="white",
@@ -319,7 +335,6 @@ class SetupPage(tk.Frame):
         self.button_calfromfile.pack_forget()
 
     def showCalMainPage(self):
-        self.is_calibrated = td.is_calibrated()
         if self.is_calibrated:
             self.banner_label.configure(text="Calibration Successful!", bg=SUCCESS_GREEN)
         else:
@@ -401,7 +416,7 @@ class AboutPage(tk.Frame):
         self.glove_image.pack(pady=20)
 
         team_label = tk.Label(self, text="The Team: Aaron Epstein (CS), Danny Bronshvayg (EE), Ben Santaus (CE), Nadya Ganem (HF)", font=MEDIUM_FONT)
-        info_label = tk.Label(self, text="This glove was produced as part of a Senior Design Project and is licensed under ****", font=MEDIUM_FONT)
+        info_label = tk.Label(self, wraplength=600, text="This glove was produced as part of a Senior Design Project at Tufts University and is licensed under ****", font=MEDIUM_FONT)
         github_link = tk.Button(self, text="GitHub Repository", fg="white", command=lambda: self.open_github_link(),
                                 font=("Verdana", 14), background=BUTTON_BLUE, anchor="center", bd=0)
 
