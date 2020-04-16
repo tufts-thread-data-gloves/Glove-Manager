@@ -41,11 +41,11 @@ class ManagerWindow(tk.Tk):
         topLeftFrame = tk.Frame(menu_container, relief='solid', bg="white")
         topLeftFrame.grid(row=0, column=0, padx=10, sticky="w")
 
-        self.info_button = tk.Button(topLeftFrame, text="Info", bg="white", bd=0, fg=GREY, font=("Verdana", 16),
+        self.info_button = tk.Button(topLeftFrame, text="CONNECTION", bg="white", bd=0, fg=GREY, font=("Verdana", 16),
                                 command=lambda: self.show_frame(InfoPage))
-        self.setup_button = tk.Button(topLeftFrame, text="Setup", bg="white", bd=0, fg=GREY, font=("Verdana", 16),
+        self.setup_button = tk.Button(topLeftFrame, text="CALIBRATION", bg="white", bd=0, fg=GREY, font=("Verdana", 16),
                                  command=lambda: self.show_frame(SetupPage))
-        self.demo_button = tk.Button(topLeftFrame, text="Demo", bg="white", bd=0, fg=GREY, font=("Verdana", 16),
+        self.demo_button = tk.Button(topLeftFrame, text="DEMO", bg="white", bd=0, fg=GREY, font=("Verdana", 16),
                                 command=lambda: self.show_frame(DemoPage))
 
         self.info_button.grid(row=0, column=0, padx=10, pady=10)
@@ -55,9 +55,9 @@ class ManagerWindow(tk.Tk):
         topRightFrame = tk.Frame(menu_container, relief='solid', bg="white")
         topRightFrame.grid(row=0, column=1, padx=10, sticky="e")
 
-        self.help_button = tk.Button(topRightFrame, text="Help", bg="white", bd=0, fg=GREY, font=("Verdana", 16),
+        self.help_button = tk.Button(topRightFrame, text="HELP", bg="white", bd=0, fg=GREY, font=("Verdana", 16),
                                 command=lambda: self.show_frame(HelpPage))
-        self.about_button = tk.Button(topRightFrame, text="About", bg="white", bd=0, fg=GREY, font=("Verdana", 16),
+        self.about_button = tk.Button(topRightFrame, text="ABOUT", bg="white", bd=0, fg=GREY, font=("Verdana", 16),
                                  command=lambda: self.show_frame(AboutPage))
         self.help_button.grid(row=0, column=0, padx=10, pady=10)
         self.about_button.grid(row=0, column=1, padx=10, pady=10)
@@ -354,14 +354,14 @@ class DemoPage(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
 
-        self.banner_label = tk.Label(self, text="Demo", font=("Verdana", 22), bg=GREY,
+        self.banner_label = tk.Label(self, text="Demonstration Video", font=("Verdana", 22), bg=GREY,
                                      anchor="center", fg="white")
         self.banner_label.pack(fill='x', ipady=10)
         label = tk.Label(self,
-                         text="For a demo of how to calibrate and use the glove:",
+                         text="This video highlight's the glove components and shows how to setup the glove.",
                          font=LARGE_FONT)
         label.pack(pady=20)
-        button_video = tk.Button(self, text="Demo Video", command=lambda: self.open_demo_video(), bd=0, bg=BUTTON_BLUE,
+        button_video = tk.Button(self, text="Watch Video", command=lambda: self.open_demo_video(), bd=0, bg=BUTTON_BLUE,
                                  fg="white", font=("Verdana", 14))
         button_video.pack(ipadx=15, ipady=5, pady=10)
 
@@ -376,53 +376,36 @@ class HelpPage(tk.Frame):
 
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
-        self.banner_label = tk.Label(self, text="FAQ", font=("Verdana", 22), bg=GREY,
+        self.banner_label = tk.Label(self, text="Help", font=("Verdana", 22), bg=GREY,
                                      anchor="center", fg="white")
         self.banner_label.pack(fill='x', ipady=10)
 
-        a = tk.Label(self, wraplength=600, text="1. I still can't get the glove to connect, what else should I try?", font=("Verdana", 16))
-        a_ans = tk.Label(self, wraplength=600, text="-> Stop the execution of the device driver and quit out of this. Power off the glove, and then back on, start the device driver, and then start the Glove Manager.",
+        faq_header = tk.Label(self, text="Frequently Asked Questions", font=("Verdana", 20), anchor='w')
+
+        a = tk.Label(self, wraplength=600, anchor='w', justify="left", text="How do I power on the glove?", font=("Verdana", 16))
+        a_ans = tk.Label(self, wraplength=600, anchor='w', justify="left", text="-> Plug the USB cord into the on-glove and battery and make sure the green LED light on the palm is on.",
                          font=("Verdana", 12))
 
-        b = tk.Label(self, wraplength=600, text="2. What is a saved calibration file?", font=("Verdana", 16))
-        b_ans = tk.Label(self, wraplength=600, text="-> A saved calibration file is a .txt file with two lines of sensor readings. These are default saved to files with the pattern #####calibration.txt where the ##### is a number that signifies the timestamp when the calibration was done.",
+        b = tk.Label(self, wraplength=600, anchor='w', justify="left", text="What software works with the glove?", font=("Verdana", 16))
+        b_ans = tk.Label(self, wraplength=600, anchor='w', justify="left", text="-> A Unity demo application is available on our GitHub page. In addition, any software that runs on Windows 10 can connect with the API endpoints of the device driver.",
                          font=("Verdana", 12))
 
-        c = tk.Label(self, wraplength=600, text="3. Where can I find more documentation on this glove and how to interface with it?", font=("Verdana", 16))
-        c_ans = tk.Label(self, wraplength=600, text="-> Full documentation for this glove can be found on the GitHub repository linked on the about page.",
-                         font=("Verdana", 12))
+        trouble = tk.Label(self, wraplength=600, anchor='w', text="Troubleshooting Tips", font=("Verdana", 20))
+        a_t = tk.Label(self, wraplength=600, anchor='w', justify="left", font=("Verdana", 12), text="-> Calibrate the glove everytime to ensure accuracy.")
+        b_t = tk.Label(self, wraplength=600, anchor='w', justify="left", font=("Verdana", 12), text="-> Restart the application and the device driver if the glove can not connect.")
 
-        a.pack(pady=25)
-        a_ans.pack(pady=10)
-        b.pack(pady=25)
-        b_ans.pack(pady=10)
-        c.pack(pady=25)
-        c_ans.pack(pady=10)
-
-    def updateContent(self):
-        # no-op for now
-        return
-
-class AboutPage(tk.Frame):
-
-    def __init__(self, parent, controller):
-        tk.Frame.__init__(self, parent)
-        self.banner_label = tk.Label(self, text="FAQ", font=("Verdana", 22), bg=GREY,
-                                     anchor="center", fg="white")
-        self.banner_label.pack(fill='x', ipady=10)
-
-        self.img = ImageTk.PhotoImage(Image.open("logo.png"))
-        self.glove_image = tk.Label(self, image=self.img)
-        self.glove_image.pack(pady=20)
-
-        team_label = tk.Label(self, text="The Team: Aaron Epstein (CS), Danny Bronshvayg (EE), Ben Santaus (CE), Nadya Ganem (HF)", font=MEDIUM_FONT)
-        info_label = tk.Label(self, wraplength=600, text="This glove was produced as part of a Senior Design Project at Tufts University and is licensed under ****", font=MEDIUM_FONT)
-        github_link = tk.Button(self, text="GitHub Repository", fg="white", command=lambda: self.open_github_link(),
+        morehelp = tk.Button(self, text="More Help and Documentation", fg="white", command=lambda: self.open_github_link(),
                                 font=("Verdana", 14), background=BUTTON_BLUE, anchor="center", bd=0)
 
-        team_label.pack(pady=10)
-        info_label.pack(pady=10)
-        github_link.pack(ipadx=20, ipady=5, pady=10)
+        faq_header.pack(pady=25, fill='both', padx=15)
+        a.pack(pady=25, fill='both', padx=20)
+        a_ans.pack(pady=10, fill='both', padx=25)
+        b.pack(pady=25, fill='both', padx=20)
+        b_ans.pack(pady=10, fill='both', padx=25)
+        trouble.pack(pady=25, fill='both', padx=15)
+        a_t.pack(pady=10, fill='both', padx=20)
+        b_t.pack(pady=10, fill='both', padx=20)
+        morehelp.pack(ipady=5, ipadx=10, pady=20)
 
     def updateContent(self):
         # no-op for now
@@ -430,6 +413,28 @@ class AboutPage(tk.Frame):
 
     def open_github_link(self):
         webbrowser.open_new("https://github.com/tufts-thread-data-gloves")
+
+class AboutPage(tk.Frame):
+
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+        self.banner_label = tk.Label(self, text="About", font=("Verdana", 22), bg=GREY,
+                                     anchor="center", fg="white")
+        self.banner_label.pack(fill='x', ipady=10)
+
+        self.img = ImageTk.PhotoImage(Image.open("logo.png"))
+        self.glove_image = tk.Label(self, image=self.img)
+        self.glove_image.pack(pady=20)
+
+        info_label = tk.Label(self, text="Glove Components: Bluetooth Low Energy, Arduino 33 Nano BLE, Gyroscope, Accelerometer, Thread Resistors, Battery Source",
+                              font=MEDIUM_FONT, wraplength=600)
+        team_label = tk.Label(self, text="The Team: Aaron Epstein (CS), Danny Bronshvayg (EE), Ben Santaus (CE), Nadya Ganem (HFE)", font=MEDIUM_FONT)
+        info_label.pack(pady=10)
+        team_label.pack(pady=10)
+
+    def updateContent(self):
+        # no-op for now
+        return
 
 
 
