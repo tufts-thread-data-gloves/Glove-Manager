@@ -5,6 +5,7 @@ from PIL import Image, ImageTk
 import pathlib
 import webbrowser
 import time
+from datetime import datetime
 
 LARGE_FONT = ("Verdana", 12)
 MEDIUM_FONT = ("Verdana", 10)
@@ -27,7 +28,7 @@ class ManagerWindow(tk.Tk):
 
         # setup up tkinter screen
         tk.Tk.__init__(self, *args, **kwargs)
-        self.minsize(width=850, height=700)
+        self.minsize(width=950, height=700)
         self.title("Salmon Glove Manager")
 
         menu_container = tk.Frame(self)
@@ -113,17 +114,53 @@ class ManagerWindow(tk.Tk):
 class HomePage(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
-        self.welcome_label = tk.Label(self, text="Welcome!", font=("Verdana", 22), bg=GREY, anchor="center", fg="white")
+        # banner
+        self.welcome_label = tk.Label(self, text="Welcome to the Data Glove Manager!", font=("Verdana", 22), bg=GREY,
+                                      anchor="center", fg="white")
         self.welcome_label.pack(fill='x', ipady=10)
 
+        # sub-frame
+        subFrame = tk.Frame(self)
+        subFrame.pack(fill="both", expand=True)
+        subFrame.configure(bg="white")
+
+        subFrame.grid_columnconfigure(0, weight=1)
+        subFrame.grid_columnconfigure(1, weight=1)
+        leftFrame = tk.Frame(subFrame, relief='solid', bg="white")
+        leftFrame.grid(row=0, column=0, padx=25, pady=20, sticky="w")
+        rightFrame = tk.Frame(subFrame, relief='solid', bg="white")
+        rightFrame.grid(row=0, column=1, padx=25, pady=20)
+
+
+        subFrame.grid_columnconfigure(0, weight=1)
+        subFrame.grid_columnconfigure(1, weight=1)
+
+        # right frame content
         self.img = ImageTk.PhotoImage(Image.open("logo.png"))
-        self.glove_image = tk.Label(self, image=self.img)
+        self.glove_image = tk.Label(rightFrame, image=self.img, bg="white")
         self.glove_image.pack(pady=20)
 
-        self.start_button = tk.Button(self, text="Start!",
-                                   command=lambda: controller.show_frame(InfoPage), font=("Verdana", 14),
+        self.start_button = tk.Button(rightFrame, text="CALIBRATE",
+                                   command=lambda: controller.show_frame(InfoPage), font=("Verdana", 12),
                                    background=BUTTON_BLUE, anchor="center", fg="white", bd=0)
-        self.start_button.pack(pady=20, ipadx=40, ipady=5)
+        self.start_button.pack(pady=10, ipadx=20, ipady=5)
+
+        # left frame content
+        quickSetupLabel = tk.Label(leftFrame, text="Quick Setup Guide", anchor='w', justify="left",
+                                   font=("Verdana", 18), bg="white")
+        step1 = tk.Label(leftFrame, text="1. Place your hand inside the glove.", anchor='w', justify="left",
+                         font=("Verdana", 16), bg="white")
+        step2 = tk.Label(leftFrame, text="2. Power ON the glove.", anchor='w', justify="left",
+                         font=("Verdana", 16), bg="white")
+        step3 = tk.Label(leftFrame, text="3. Calibrate the glove with this application.", anchor='w', justify="left",
+                         font=("Verdana", 16), bg="white")
+        note = tk.Label(leftFrame, text="Note: The glove pairs automatically through bluetooth.", anchor='w', justify="left",
+                         font=("Verdana", 12), bg="white")
+        quickSetupLabel.pack(pady=20, padx=15, fill="both")
+        step1.pack(pady=10, padx=25, fill="both")
+        step2.pack(pady=10, padx=25,fill="both")
+        step3.pack(pady=10, padx=25,fill="both")
+        note.pack(pady=25, padx=15,fill="both")
 
     def updateContent(self):
         # no-op for now
@@ -138,6 +175,8 @@ class InfoPage(tk.Frame):
 
         self.glove_connected_label = tk.Label(self, text="Glove Not Connected", font=("Verdana", 22), bg=FAILURE_RED, anchor="center", fg="white")
         self.glove_connected_label.pack(fill='x', ipady=10)
+
+        self.time_connected_label = tk.Label(self, font=("Verdana", 20))
 
         self.img = ImageTk.PhotoImage(Image.open("logo.png"))
         self.glove_image = tk.Label(self, image=self.img)
@@ -159,9 +198,22 @@ class InfoPage(tk.Frame):
             self.glove_connected_label.configure(text="Connection Successful!", bg=SUCCESS_GREEN)
             self.help_labela.pack_forget()
             self.help_labelb.pack_forget()
+            # add the time label it was connected at
+            # datetime object containing current date and time
+            now = datetime.now()
+            # dd/mm/YY H:M:S
+            dt_string = now.strftime("Connected on: %m/%d/%Y at %H:%M")
+            self.time_connected_label.configure(text=dt_string)
+            self.glove_image.pack_forget()
+            self.refresh_button.pack_forget()
+            self.time_connected_label.pack(pady=20)
+            self.glove_image.pack(pady=20)
+            self.refresh_button.pack(pady=20, ipadx=20, ipady=5)
+
         else:
             self.glove_connected_label.configure(text="Glove Not Connected", bg=FAILURE_RED)
             self.refresh_button.pack_forget()
+            self.time_connected_label.pack_forget()
             self.help_labela.pack(ipady=5)
             self.help_labelb.pack(ipady=5)
             self.refresh_button.pack(pady=20, ipadx=20, ipady=5)
@@ -176,12 +228,16 @@ class SetupPage(tk.Frame):
 
         self.is_calibrated = False
         self.is_glove_connected = td.is_glove_connected()
+        self.current_filepath_str = ""  # used to store the file in use for calibration
 
         # empty widgets used in overlays
         self.description = None
         self.countdown_timer = None
         self.cal_button = None
         self.label_notconn = None
+        self.time_connected_label = tk.Label(self, font=("Verdana", 20))
+        self.file_connected_label = tk.Label(self, font=("Verdana", 20))
+
         # button to start calibration from saved file, or do it fresh
         self.button_calfromfile = tk.Button(self, command=lambda: self.showCalFileOverlay(), font=("Verdana", 14),
                                             background=BUTTON_BLUE, anchor="center", fg="white", bd=0)
@@ -231,6 +287,8 @@ class SetupPage(tk.Frame):
         if self.cal_button is not None:
             self.countdown_timer.pack_forget()
 
+        self.button_calfromfile.pack_forget()
+        self.button_calnew.pack_forget()
         self.showCalMainPage()
 
         if self.is_glove_connected:
@@ -254,6 +312,7 @@ class SetupPage(tk.Frame):
 
     def selectSavedFile(self):
         filepath = filedialog.askopenfilename()
+        self.current_filepath_str = filepath
 
         try:
             td.set_calibration_with_file(filepath)
@@ -274,7 +333,7 @@ class SetupPage(tk.Frame):
         # we want description, countdown timer, start button, and saved file
         self.banner_label.configure(text="New Calibration", bg=BUTTON_BLUE)
         self.description = tk.Label(self, font=("Verdana", 16), wraplength=600,
-            text="You will have 10 seconds to open your hand as wide as possible and close it into a tight fist")
+            text="When ready, press start, then open your hand as wide as possible and close it into a tight fist.")
         #self.countdown_timer = tk.Label(self, font=MEDIUM_FONT, text="Time Left: 10 seconds")
         self.cal_button = tk.Button(self, text="Start", background=BUTTON_BLUE, anchor="center", fg="white",
                                     bd=0, font=("Verdana", 14), command=lambda: self.startCalibration())
@@ -284,6 +343,7 @@ class SetupPage(tk.Frame):
 
     def startCalibration(self):
         filepath = str(pathlib.Path().absolute()) + "\\" + str(int(time.time())) + "calibration.txt"
+        self.current_filepath_str = filepath
 
         # start calibration
         td.start_calibration(10, filepath)
@@ -333,10 +393,24 @@ class SetupPage(tk.Frame):
             self.label_notconn.pack_forget()
         self.button_calnew.pack_forget()
         self.button_calfromfile.pack_forget()
+        self.time_connected_label.pack_forget()
+        self.file_connected_label.pack_forget()
 
     def showCalMainPage(self):
         if self.is_calibrated:
+            # new calibration, so set the date/time label to now
+            now = datetime.now()
+            # dd/mm/YY H:M:S
+            dt_string = now.strftime("Last Calibration: %m/%d/%Y at %H:%M")
+            self.time_connected_label.configure(text=dt_string)
+            fileInUse = "File in Use: " + self.current_filepath_str
+            self.file_connected_label.configure(text=fileInUse, wraplength=700)
+
             self.banner_label.configure(text="Calibration Successful!", bg=SUCCESS_GREEN)
+            self.cal_image.pack_forget()
+            self.time_connected_label.pack(pady=20)
+            self.file_connected_label.pack(pady=20)
+            self.cal_image.pack(pady=20)
         else:
             self.banner_label.configure(text="Glove Not Calibrated", bg=FAILURE_RED)
 
